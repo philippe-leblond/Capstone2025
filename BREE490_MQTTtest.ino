@@ -5,10 +5,6 @@
 const char *ssid = "Scooby-Doo"; // Enter your Wi-Fi name
 const char *password = "Hakuna-matata";  // Enter Wi-Fi password
 
-// const char *ssid = "wpa.mcgill.ca";  // SSID for McGill's Wi-Fi network
-// const char *username = "philippe.leblond2@mail.mcgill.ca"; // McGill email as the username
-// const char *password = "Reengineering2025!"; // McGill network password
-
 
 // MQTT Broker
 const char *mqtt_broker = "192.168.0.56";
