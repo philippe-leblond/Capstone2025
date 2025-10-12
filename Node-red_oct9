@@ -1,5 +1,52 @@
 [
     {
+        "id": "4c2eda91186fe404",
+        "type": "tab",
+        "label": "Greenhouse",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f7ef26a3c31d04c0",
+        "type": "mqtt in",
+        "z": "4c2eda91186fe404",
+        "name": "Table 1 ESP32",
+        "topic": "greenhouse/table1/data",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "9cc7a1fdf15e6ba7",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 280,
+        "y": 240,
+        "wires": [
+            [
+                "cdb09deb58f45f0c",
+                "3f61951e0cf6ecad"
+            ]
+        ]
+    },
+    {
+        "id": "cdb09deb58f45f0c",
+        "type": "debug",
+        "z": "4c2eda91186fe404",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 480,
+        "y": 160,
+        "wires": []
+    },
+    {
         "id": "3f61951e0cf6ecad",
         "type": "function",
         "z": "4c2eda91186fe404",
@@ -19,5 +66,888 @@
                 "6b3b5baf4d854d37"
             ]
         ]
+    },
+    {
+        "id": "6b3b5baf4d854d37",
+        "type": "debug",
+        "z": "4c2eda91186fe404",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 720,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "7391de4ce68274d1",
+        "type": "debug",
+        "z": "4c2eda91186fe404",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "a8b357e2587067dd",
+        "type": "mqtt out",
+        "z": "4c2eda91186fe404",
+        "name": "Table 1 ESP32 Command",
+        "topic": "greenhouse/table1/command",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "9cc7a1fdf15e6ba7",
+        "x": 710,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "07d306fd73c22895",
+        "type": "function",
+        "z": "4c2eda91186fe404",
+        "name": "UI messages",
+        "func": "let mode = msg.payload\nif (mode === \"auto\"){\n    msg.payload = \"<span style='color:green;font-weight:bold;'>Auto</span>\";\n} else {\n    msg.payload = \"<span style='color:red;font-weight:bold;'>Manual</span>\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 560,
+        "wires": [
+            [
+                "8c694f96e0983867"
+            ]
+        ]
+    },
+    {
+        "id": "4fe12bd04d7fd51f",
+        "type": "debug",
+        "z": "4c2eda91186fe404",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "df5f36ca6a9a4c7a",
+        "type": "join",
+        "z": "4c2eda91186fe404",
+        "name": "Join Image",
+        "mode": "custom",
+        "build": "buffer",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": false,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 470,
+        "y": 640,
+        "wires": [
+            [
+                "a4ae241985fece41"
+            ]
+        ]
+    },
+    {
+        "id": "a4ae241985fece41",
+        "type": "function",
+        "z": "4c2eda91186fe404",
+        "name": "Store Image in base64",
+        "func": "msg.payload = msg.payload.toString(\"base64\")\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 640,
+        "wires": [
+            [
+                "981e4ca7f57fd481"
+            ]
+        ]
+    },
+    {
+        "id": "981e4ca7f57fd481",
+        "type": "file",
+        "z": "4c2eda91186fe404",
+        "name": "Wrtie Image",
+        "filename": "/home/orchid-pi/Pictures/LeParadisDesOrchidees",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 950,
+        "y": 640,
+        "wires": [
+            [
+                "4fe12bd04d7fd51f"
+            ]
+        ]
+    },
+    {
+        "id": "9bdd3fdd3d4b0748",
+        "type": "file in",
+        "z": "4c2eda91186fe404",
+        "name": "Image From File",
+        "filename": "/home/orchid-pi/Pictures/LeParadisDesOrchidees",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 720,
+        "wires": [
+            [
+                "a154cec0c6557e2f"
+            ]
+        ]
+    },
+    {
+        "id": "a154cec0c6557e2f",
+        "type": "function",
+        "z": "4c2eda91186fe404",
+        "name": "Read Image in base64",
+        "func": "msg.payload = Buffer.from(msg.payload, \"base64\")\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8591e5473a2ba415",
+        "type": "inject",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 720,
+        "wires": [
+            [
+                "9bdd3fdd3d4b0748"
+            ]
+        ]
+    },
+    {
+        "id": "b8e908b6a06254d0",
+        "type": "inject",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "c«xv",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 80,
+        "wires": [
+            [
+                "980e091bcafac8fd"
+            ]
+        ]
+    },
+    {
+        "id": "980e091bcafac8fd",
+        "type": "debug",
+        "z": "4c2eda91186fe404",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 420,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "f82e010c7e5686bb",
+        "type": "function",
+        "z": "4c2eda91186fe404",
+        "name": "Integer Filter",
+        "func": "let val = msg.payload;\nlet num = Number(val);\n\nif (!isNaN(num) && Number.isInteger(num)){\n    msg.payload = num;\n    return msg;\n} else {\n    node.status({fill:\"red\", shape:\"dot\", text:\"Invalid input\"});\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 360,
+        "wires": [
+            [
+                "a8b357e2587067dd"
+            ]
+        ]
+    },
+    {
+        "id": "48560bf8278bc3d0",
+        "type": "function",
+        "z": "4c2eda91186fe404",
+        "name": "Get weight values",
+        "func": "msg.topic = \"SELECT timestamp, averageweight FROM greenhouse_table1 ORDER BY timestamp DESC LIMIT 100\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 780,
+        "wires": [
+            [
+                "5e622efe1435c533"
+            ]
+        ]
+    },
+    {
+        "id": "9998b1cff9517c7e",
+        "type": "debug",
+        "z": "4c2eda91186fe404",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "70a2dc7f3a9f960b",
+        "type": "function",
+        "z": "4c2eda91186fe404",
+        "name": "plot DB data",
+        "func": "let rows = msg.payload;\nlet data = [];\n\nfor(let i = 0; i < rows.length; i++) {\n    data.push({ x: rows[i].timestamp, y: rows[i].averageweight});\n\n}\nmsg.payload = data\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 820,
+        "wires": [
+            [
+                "c00ee861d4890926"
+            ]
+        ]
+    },
+    {
+        "id": "532039002dc2b84a",
+        "type": "sqlite",
+        "z": "4c2eda91186fe404",
+        "mydb": "7f6ec037c2cc5343",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Greenhouse database",
+        "x": 680,
+        "y": 240,
+        "wires": [
+            [
+                "7391de4ce68274d1"
+            ]
+        ]
+    },
+    {
+        "id": "5e622efe1435c533",
+        "type": "sqlite",
+        "z": "4c2eda91186fe404",
+        "mydb": "7f6ec037c2cc5343",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Greenhouse database",
+        "x": 600,
+        "y": 780,
+        "wires": [
+            [
+                "9998b1cff9517c7e",
+                "70a2dc7f3a9f960b"
+            ]
+        ]
+    },
+    {
+        "id": "d1a0ee2cb3333024",
+        "type": "ui_button",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "fbde1689d113c1a0",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Stop",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Red",
+        "className": "",
+        "icon": "",
+        "payload": "stop",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 250,
+        "y": 380,
+        "wires": [
+            [
+                "a8b357e2587067dd",
+                "07d306fd73c22895"
+            ]
+        ]
+    },
+    {
+        "id": "23dd0e88d5acf45d",
+        "type": "ui_button",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "fbde1689d113c1a0",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Open",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Green",
+        "className": "",
+        "icon": "",
+        "payload": "open",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 270,
+        "y": 440,
+        "wires": [
+            [
+                "a8b357e2587067dd",
+                "07d306fd73c22895"
+            ]
+        ]
+    },
+    {
+        "id": "2103f2f3a51ec5cc",
+        "type": "ui_button",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "fbde1689d113c1a0",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Auto ",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Orange",
+        "className": "",
+        "icon": "",
+        "payload": "auto",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 290,
+        "y": 520,
+        "wires": [
+            [
+                "a8b357e2587067dd",
+                "07d306fd73c22895"
+            ]
+        ]
+    },
+    {
+        "id": "541a0feeec610137",
+        "type": "ui_button",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "eeeac7e82a7de1bc",
+        "order": 2,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "",
+        "tooltip": "Load latest data from database",
+        "color": "Green",
+        "bgcolor": "White",
+        "className": "",
+        "icon": "fa-refresh",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 170,
+        "y": 780,
+        "wires": [
+            [
+                "48560bf8278bc3d0"
+            ]
+        ]
+    },
+    {
+        "id": "cfe1db52848bf47f",
+        "type": "ui_button",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "eeeac7e82a7de1bc",
+        "order": 3,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "",
+        "tooltip": "Delete Current Chart Data",
+        "color": "Red",
+        "bgcolor": "White",
+        "className": "",
+        "icon": "fa-trash",
+        "payload": "[]",
+        "payloadType": "json",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 850,
+        "y": 880,
+        "wires": [
+            [
+                "c00ee861d4890926"
+            ]
+        ]
+    },
+    {
+        "id": "c069d7c085315a05",
+        "type": "ui_switch",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "label": "Weight Threshold Activated",
+        "tooltip": "",
+        "group": "a22a2968e93f5d94",
+        "order": 3,
+        "width": 2,
+        "height": 2,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 440,
+        "y": 300,
+        "wires": [
+            [
+                "a8b357e2587067dd"
+            ]
+        ]
+    },
+    {
+        "id": "82bca4b1f807b940",
+        "type": "ui_text_input",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "label": "Weight Threshold Level (g)",
+        "tooltip": "Set the weight threshold that activates irrigation.",
+        "group": "a22a2968e93f5d94",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "mode": "number",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 180,
+        "y": 340,
+        "wires": [
+            [
+                "f82e010c7e5686bb"
+            ]
+        ]
+    },
+    {
+        "id": "28c2ee4caccb46f2",
+        "type": "ui_gauge",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "eeeac7e82a7de1bc",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Current Average Plant Weight",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#b32d00",
+            "#e6e600",
+            "#3acb65"
+        ],
+        "seg1": "20",
+        "seg2": "50",
+        "diff": false,
+        "className": "",
+        "x": 1030,
+        "y": 920,
+        "wires": []
+    },
+    {
+        "id": "c00ee861d4890926",
+        "type": "ui_chart",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "eeeac7e82a7de1bc",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Average Plant Weight",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "dd HH:mm",
+        "interpolate": "linear",
+        "nodata": "Waiting for data.",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "15",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1060,
+        "y": 820,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8c694f96e0983867",
+        "type": "ui_template",
+        "z": "4c2eda91186fe404",
+        "group": "93c26e5ec0976b2d",
+        "name": "Interface",
+        "order": 1,
+        "width": 4,
+        "height": 1,
+        "format": "<div> \n    Mode: <span id=\"modeStatus\"></span>\n</div>\n\n<script>\n    (function(scope) {\n        scope.$watch('msg.payload', function(payload){\n            document.getElementById(\"modeStatus\").innerHTML = payload;\n        });\n    })(scope);\n    </script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 680,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d7cb54cf5cb7d480",
+        "type": "ui_upload",
+        "z": "4c2eda91186fe404",
+        "group": "6949666689de5ab8",
+        "title": "upload",
+        "accept": "",
+        "name": "",
+        "order": 1,
+        "width": 3,
+        "height": 2,
+        "chunk": 256,
+        "transfer": "binary",
+        "x": 310,
+        "y": 640,
+        "wires": [
+            [
+                "df5f36ca6a9a4c7a"
+            ]
+        ]
+    },
+    {
+        "id": "1408c0f0595b7cab",
+        "type": "ui_spacer",
+        "z": "4c2eda91186fe404",
+        "name": "spacer",
+        "group": "eeeac7e82a7de1bc",
+        "order": 4,
+        "width": 12,
+        "height": 1
+    },
+    {
+        "id": "964c6af1c5c46c5f",
+        "type": "ui_spacer",
+        "z": "4c2eda91186fe404",
+        "name": "spacer",
+        "group": "a22a2968e93f5d94",
+        "order": 2,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "26494f317b1f88ba",
+        "type": "ui_spacer",
+        "z": "4c2eda91186fe404",
+        "name": "spacer",
+        "group": "a22a2968e93f5d94",
+        "order": 4,
+        "width": 2,
+        "height": 1
+    },
+    {
+        "id": "fc0059268b052094",
+        "type": "ui_spacer",
+        "z": "4c2eda91186fe404",
+        "name": "spacer",
+        "group": "a22a2968e93f5d94",
+        "order": 5,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "760dd39843bac7c6",
+        "type": "ui_spacer",
+        "z": "4c2eda91186fe404",
+        "name": "spacer",
+        "group": "a22a2968e93f5d94",
+        "order": 6,
+        "width": 2,
+        "height": 1
+    },
+    {
+        "id": "797f0643aced0f8b",
+        "type": "ui_spacer",
+        "z": "4c2eda91186fe404",
+        "name": "spacer",
+        "group": "6949666689de5ab8",
+        "order": 2,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "df54eea78d3eae40",
+        "type": "ui_spacer",
+        "z": "4c2eda91186fe404",
+        "name": "spacer",
+        "group": "6949666689de5ab8",
+        "order": 3,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "9cc7a1fdf15e6ba7",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "localhost",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "7f6ec037c2cc5343",
+        "type": "sqlitedb",
+        "db": "/home/phil-pi/Documents/Database/TestGreenhouse.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "fbde1689d113c1a0",
+        "type": "ui_group",
+        "name": "Irrigation Control",
+        "tab": "6512463c9c183e8a",
+        "order": 2,
+        "disp": true,
+        "width": 4,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "eeeac7e82a7de1bc",
+        "type": "ui_group",
+        "name": "Greenhouse Soil Moisture",
+        "tab": "c8a5efbc78365c71",
+        "order": 1,
+        "disp": true,
+        "width": 14,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "a22a2968e93f5d94",
+        "type": "ui_group",
+        "name": "Irrigation Threshold",
+        "tab": "6512463c9c183e8a",
+        "order": 3,
+        "disp": true,
+        "width": 5,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "93c26e5ec0976b2d",
+        "type": "ui_group",
+        "name": "Irrigation Mode",
+        "tab": "6512463c9c183e8a",
+        "order": 1,
+        "disp": true,
+        "width": 4,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6949666689de5ab8",
+        "type": "ui_group",
+        "name": "Image",
+        "tab": "6512463c9c183e8a",
+        "order": 4,
+        "disp": true,
+        "width": 4,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6512463c9c183e8a",
+        "type": "ui_tab",
+        "name": "Office",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "c8a5efbc78365c71",
+        "type": "ui_tab",
+        "name": "Data Monitoring",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "d2db9f3b1dd6b0fd",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-sqlite": "1.1.1",
+            "node-red-dashboard": "3.6.6",
+            "node-red-contrib-ui-upload": "0.8.1"
+        }
     }
 ]
