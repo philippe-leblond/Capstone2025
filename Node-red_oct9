@@ -1,0 +1,23 @@
+[
+    {
+        "id": "3f61951e0cf6ecad",
+        "type": "function",
+        "z": "4c2eda91186fe404",
+        "name": "Parse",
+        "func": "let data = msg.payload; msg.topic = \"INSERT INTO TestTable1 (device_id, temperature, humidity, weight1, weight2, weight3, averageweight, weightThreshold, solenoid, fan) VALUES ($device_id, $temperature, $humidity, $weight1, $weight2, $weight3, $averageweight, $weightThreshold, $solenoid, $fan)\"; \n// Use device ID to identify the ESP32 (you can hardcode for now) \nmsg.payload = [\"table1\", data.temperature, data.humidity,data.weight1, data.weight2, data.weight3, data.averageWeight, data.weightThreshold, data.solenoid ? 1 : 0, data.fan ? 1 : 0]; \nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 240,
+        "wires": [
+            [
+                "532039002dc2b84a",
+                "6b3b5baf4d854d37"
+            ]
+        ]
+    }
+]
