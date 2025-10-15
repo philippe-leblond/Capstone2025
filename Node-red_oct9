@@ -51,7 +51,7 @@
         "type": "function",
         "z": "4c2eda91186fe404",
         "name": "Parse",
-        "func": "let data = msg.payload; msg.topic = \"INSERT INTO TestTable1 (device_id, temperature, humidity, weight1, weight2, weight3, averageweight, weightThreshold, solenoid, fan) VALUES ($device_id, $temperature, $humidity, $weight1, $weight2, $weight3, $averageweight, $weightThreshold, $solenoid, $fan)\"; \n// Use device ID to identify the ESP32 (you can hardcode for now) \nmsg.payload = [\"table1\", data.temperature, data.humidity,data.weight1, data.weight2, data.weight3, data.averageWeight, data.weightThreshold, data.solenoid ? 1 : 0, data.fan ? 1 : 0]; \nreturn msg;",
+        "func": "let data = msg.payload; msg.topic = \"INSERT INTO TestTable1 (device_id, temperature, humidity, weight1, weight2, weight3, averageWeight, weightDifference, solenoid, fan, manual) VALUES ($device_id, $temperature, $humidity, $weight1, $weight2, $weight3, $averageWeight, $weightDifference, $solenoid, $fan, $manual)\"; \n// Use device ID to identify the ESP32 (you can hardcode for now) \nmsg.payload = [\"table1\", data.temperature, data.humidity,data.weight1, data.weight2, data.weight3, data.averageWeight, data.weightDifference, data.solenoid ? 1 : 0, data.fan ? 1 : 0, data.manual ? 1 : 0]; \nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -350,7 +350,8 @@
         "y": 360,
         "wires": [
             [
-                "a8b357e2587067dd"
+                "a8b357e2587067dd",
+                "df68f63c9a423347"
             ]
         ]
     },
@@ -521,8 +522,8 @@
         "payloadType": "str",
         "topic": "topic",
         "topicType": "msg",
-        "x": 290,
-        "y": 520,
+        "x": 270,
+        "y": 480,
         "wires": [
             [
                 "a8b357e2587067dd",
@@ -761,6 +762,78 @@
         ]
     },
     {
+        "id": "df68f63c9a423347",
+        "type": "debug",
+        "z": "4c2eda91186fe404",
+        "name": "debug 7",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "66a18fb84f92dd88",
+        "type": "ui_button",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "fbde1689d113c1a0",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Auto Open",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Orange",
+        "className": "",
+        "icon": "",
+        "payload": "autoOn",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 310,
+        "y": 540,
+        "wires": [
+            [
+                "a8b357e2587067dd"
+            ]
+        ]
+    },
+    {
+        "id": "e45c50f3ecf3f16a",
+        "type": "ui_button",
+        "z": "4c2eda91186fe404",
+        "name": "",
+        "group": "fbde1689d113c1a0",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Auto Close",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Orange",
+        "className": "",
+        "icon": "",
+        "payload": "autoOff",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 310,
+        "y": 580,
+        "wires": [
+            [
+                "a8b357e2587067dd"
+            ]
+        ]
+    },
+    {
         "id": "1408c0f0595b7cab",
         "type": "ui_spacer",
         "z": "4c2eda91186fe404",
@@ -941,7 +1014,7 @@
         "hidden": false
     },
     {
-        "id": "d2db9f3b1dd6b0fd",
+        "id": "dbfde3bcb06881ca",
         "type": "global-config",
         "env": [],
         "modules": {
