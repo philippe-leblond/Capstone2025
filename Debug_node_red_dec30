@@ -1,0 +1,1286 @@
+[
+    {
+        "id": "58ee3731341e81a1",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "572eb4aab33744c2",
+        "type": "group",
+        "z": "58ee3731341e81a1",
+        "name": "Test Plant Weight Values",
+        "style": {
+            "fill": "#dbcbe7",
+            "label": true,
+            "color": "#000000"
+        },
+        "nodes": [
+            "44c9b361b111aecc",
+            "8f10d139684404d3",
+            "d5c88609bbe27ffc"
+        ],
+        "x": 14,
+        "y": 399,
+        "w": 172,
+        "h": 162
+    },
+    {
+        "id": "63e24ba4fe588a63",
+        "type": "group",
+        "z": "58ee3731341e81a1",
+        "name": "Test Solenoid State",
+        "style": {
+            "fill": "#dbcbe7",
+            "label": true,
+            "color": "#000000"
+        },
+        "nodes": [
+            "3f50cb5f3db32bfc",
+            "7ee322caa2266b6e"
+        ],
+        "x": 14,
+        "y": 579,
+        "w": 232,
+        "h": 122
+    },
+    {
+        "id": "d4efdf2c8b84c91f",
+        "type": "group",
+        "z": "58ee3731341e81a1",
+        "name": "Irrigation Control",
+        "style": {
+            "fill": "#bfc7d7",
+            "label": true,
+            "color": "#000000"
+        },
+        "nodes": [
+            "c8de3ead59b5323f",
+            "ce4dc8695323abc8"
+        ],
+        "x": 954,
+        "y": 559,
+        "w": 232,
+        "h": 122
+    },
+    {
+        "id": "3f9c7c9aca793a32",
+        "type": "group",
+        "z": "58ee3731341e81a1",
+        "name": "Dashboard Buttons",
+        "style": {
+            "fill": "#e3f3d3",
+            "label": true,
+            "color": "#000000"
+        },
+        "nodes": [
+            "311169565c1db341",
+            "47abfec32f95a47b"
+        ],
+        "x": 634,
+        "y": 379,
+        "w": 232,
+        "h": 142
+    },
+    {
+        "id": "combineGate",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Gate by allowUpdate",
+        "func": "let allow = flow.get(\"allowUpdate\") || false;\nif (allow) {\n    msg.topic = \"greenhouse/table1/command\";\n    msg.payload = String(msg.payload); // send as string\n    return msg;\n} else {\n    node.status({fill:\"red\",shape:\"dot\",text:\"Blocked (allowUpdate=false)\"});\n    return null;\n}",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 240,
+        "wires": [
+            [
+                "mqttOutCommand"
+            ]
+        ]
+    },
+    {
+        "id": "mqttOutAllow",
+        "type": "mqtt out",
+        "z": "58ee3731341e81a1",
+        "name": "MQTT Allow Update",
+        "topic": "greenhouse/table1/allowUpdate",
+        "qos": "",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqttBroker",
+        "x": 410,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "mqttOutCommand",
+        "type": "mqtt out",
+        "z": "58ee3731341e81a1",
+        "name": "MQTT Threshold",
+        "topic": "greenhouse/table1/command",
+        "qos": "",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "mqttBroker",
+        "x": 620,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "allowUpdateStore",
+        "type": "mqtt in",
+        "z": "58ee3731341e81a1",
+        "name": "Track allowUpdate",
+        "topic": "greenhouse/table1/allowUpdate",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqttBroker",
+        "inputs": 0,
+        "x": 160,
+        "y": 320,
+        "wires": [
+            [
+                "storeFlag"
+            ]
+        ]
+    },
+    {
+        "id": "storeFlag",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Store flag in flow",
+        "func": "flow.set(\"allowUpdate\", (msg.payload === true || msg.payload === \"true\"));\nreturn null;",
+        "outputs": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "d3a22d6eb823360d",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Solenoid State",
+        "func": "// Get previous solenoid value from node context\nlet prev = context.get('prev');\nlet current = msg.payload;\n\n// Default previous value if not set yet\nif (prev === undefined) {\n    context.set('prev', current);\n    return null; // skip first message\n}\n\n// Detect falling edge: 1 → 0\nif (prev === 1 && current === 0) {\n    node.warn(\"Solenoid changed from 1 → 0\");\n    msg.topic = \"stateChanged\";\n    msg.payload = \"trigger\";\n    context.set('prev', current);\n    return msg; // output the trigger message\n}\n\n// Update stored value for next comparison\ncontext.set('prev', current);\nreturn null; // no change, so no output\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "67f34789385ec3d5",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "solenoidState",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 900,
+        "y": 140,
+        "wires": [
+            [
+                "d3a22d6eb823360d"
+            ]
+        ]
+    },
+    {
+        "id": "b0a71558302db181",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "solenoidState",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 920,
+        "y": 200,
+        "wires": [
+            [
+                "d3a22d6eb823360d"
+            ]
+        ]
+    },
+    {
+        "id": "c8de3ead59b5323f",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "g": "d4efdf2c8b84c91f",
+        "name": "Activate Irrigation",
+        "func": "// --- Existing variables ---\nlet weightDifference = flow.get('weightDifference');\nlet measuredValue = flow.get('LoadCellMedian');\nlet maxWeight = flow.get('maxWeight');\nlet solenoid = flow.get('solenoid') || 0;\n//let wasOn = flow.get(\"wasOn\") || false;\n\nif (maxWeight === undefined || maxWeight === null || isNaN(maxWeight)) {\n    maxWeight = 981.2; // Default starting max weight in grams\n    flow.set('maxWeight', maxWeight);\n    node.warn(`⚙️ No stored maxWeight found. Default set to ${maxWeight} g`);\n    node.warn(`💡 Using maxWeight=${maxWeight}, measuredValue=${measuredValue}, weightDifference=${weightDifference}`);\n}\n\n// --- Get current local hour ---\n//let now = new Date();\n//let currentHour = now.getHours(); // 0–23 in local time\n\n// --- Check time window (9AM–1PM) ---\n//let isWithinTime = (currentHour >= 9 && currentHour < 13);\n\n// --- Main logic ---\n//if (isWithinTime) {\n\n    // Case 1: weight is below threshold → start watering\n    if (measuredValue < (maxWeight - weightDifference)) { //&& wasOn == false) {\n        msg.payload = \"autoOn\";\n        node.status({ fill: \"green\", shape: \"dot\", text: \"Watering (autoOn)\" });\n        flow.set(\"solenoid\", 1);\n     //   node.warn(`💧 Watering started: currentHour=${currentHour}, weight=${measuredValue}`);\n        //wasOn = true;\n    }\n\n//} else {\n    // Outside allowed hours\n    //msg.payload = \"autoOff\";\n    //node.status({ fill: \"yellow\", shape: \"ring\", text: \"Outside watering hours\" });\n    //node.warn(`⚠️ Not watering: current time ${currentHour}:00 is outside 9–13 window`);\n    //wasOn = false\n//}\n// --- Auto-refresh display even if no message sent ---\nif (solenoid === 1) {\n    node.status({ fill: \"green\", shape: \"dot\", text: \"Watering (autoOn)\" });\n} else if (solenoid === 0) {\n    node.status({ fill: \"red\", shape: \"ring\", text: \"Irrigation OFF\" });\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 600,
+        "wires": [
+            [
+                "3ac20ba01ae10b75"
+            ]
+        ]
+    },
+    {
+        "id": "02f1d6667ab4fc64",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Max Weight Values",
+        "func": "// Get saved state from context\nlet active = context.get(\"active\") || false;\nlet timer = context.get(\"timer\");\n\n// Handle solenoid trigger\nif (msg.topic === \"solenoidState\" && msg.payload === \"trigger\") {\n    node.warn(\"Trigger received: will store latest median in 10 minutes.\");\n\n    // If already active, reset the timer\n    if (timer) clearTimeout(timer);\n\n    // Start timer (e.g. 15 seconds for testing)\n    timer = setTimeout(() => {\n        // ⬇️ Get the *latest* value from flow at the end of the timer\n        let latestMaxWeight = flow.get(\"LoadCellMedian\");\n\n        if (latestMaxWeight !== undefined && latestMaxWeight !== null && !isNaN(latestMaxWeight)) {\n            flow.set(\"maxWeight\", latestMaxWeight);\n            node.warn(`✅ Saved latest maxWeight: ${latestMaxWeight}`);\n            node.status({ fill: \"green\", shape: \"dot\", text: `Saved: ${latestMaxWeight}` });\n            \n            let dashboardMsg = {\n        topic: \"maxWeight\",\n        payload: latestMaxWeight\n    };\n    node.send(dashboardMsg); // send value out of the function\n        } else {\n            node.warn(\"⚠️ No valid LoadCellMedian found to save.\");\n            node.status({ fill: \"red\", shape: \"ring\", text: \"No valid LoadCellMedian\" });\n        }\n\n        context.set(\"active\", false);\n        context.set(\"timer\", null);\n    }, 5000); // ← 15 seconds (or 10*60*1000 for 10 minutes)\n\n    // Save timer reference\n    context.set(\"active\", true);\n    context.set(\"timer\", timer);\n    return null;\n}\n\n// Not doing anything otherwise\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 600,
+        "wires": [
+            [
+                "0a99319ae17527c7",
+                "c8de3ead59b5323f",
+                "47abfec32f95a47b"
+            ]
+        ]
+    },
+    {
+        "id": "759e8f93695610b4",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Get Median Load Cell Value",
+        "func": "// Get the payload from the previous node (array of all data)\nlet data = msg.payload;\n\n// Extract weight1, weight2, weight3 (indexes 3, 4, 5)\nlet values = [data[3], data[4], data[5]];\n\n// Sort the values in ascending order\nvalues.sort((a, b) => a - b);\n\n// Compute the median (middle value after sorting)\nlet median;\nif (values.length === 3) {\n    median = values[1]; // middle element of 3 values\n} else {\n    // Just in case there’s a different number of values\n    let mid = Math.floor(values.length / 2);\n    median = values.length % 2 !== 0\n        ? values[mid]\n        : (values[mid - 1] + values[mid]) / 2;\n}\n\n// Output median value\nmsg.payload = median;\nmsg.topic = \"LoadCellMedian\";\nflow.set(\"LoadCellMedian\", median);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 500,
+        "wires": [
+            [
+                "02f1d6667ab4fc64",
+                "da701fc61f814141",
+                "c8de3ead59b5323f",
+                "ce4dc8695323abc8"
+            ]
+        ]
+    },
+    {
+        "id": "5a8f8cb7b388807c",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Solenoid State",
+        "func": "// Get previous solenoid value from node context\nlet prev = context.get('prev');\nlet current = msg.payload;\n\n// Default previous value if not set yet\nif (prev === undefined) {\n    context.set('prev', current);\n    return null; // skip first message\n}\n\n// Detect falling edge: 1 → 0\nif (prev === 1 && current === 0) {\n    node.warn(\"Solenoid changed from 1 → 0\");\n    msg.topic = \"solenoidState\";\n    msg.payload = \"trigger\";\n    context.set('prev', current);\n    return msg; // output the trigger message\n}\n\n// Update stored value for next comparison\ncontext.set('prev', current);\nflow.set('solenoidState', current);\nreturn null; // no change, so no output\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 600,
+        "wires": [
+            [
+                "02f1d6667ab4fc64",
+                "b85981541b38b506"
+            ]
+        ]
+    },
+    {
+        "id": "3f50cb5f3db32bfc",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "g": "63e24ba4fe588a63",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "solenoidState",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 140,
+        "y": 620,
+        "wires": [
+            [
+                "5a8f8cb7b388807c",
+                "64a44fa7a472629a"
+            ]
+        ]
+    },
+    {
+        "id": "7ee322caa2266b6e",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "g": "63e24ba4fe588a63",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "solenoidState",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 140,
+        "y": 660,
+        "wires": [
+            [
+                "5a8f8cb7b388807c",
+                "64a44fa7a472629a"
+            ]
+        ]
+    },
+    {
+        "id": "44c9b361b111aecc",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "g": "572eb4aab33744c2",
+        "name": "Max",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[0.0, 0.0, 0.0, 800.0, 700.0, 900.0]",
+        "payloadType": "json",
+        "x": 110,
+        "y": 480,
+        "wires": [
+            [
+                "759e8f93695610b4"
+            ]
+        ]
+    },
+    {
+        "id": "8f10d139684404d3",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "g": "572eb4aab33744c2",
+        "name": "Min",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[0.0, 0.0, 0.0, 600.0, 400.0, 500.0]",
+        "payloadType": "json",
+        "x": 110,
+        "y": 520,
+        "wires": [
+            [
+                "759e8f93695610b4"
+            ]
+        ]
+    },
+    {
+        "id": "da701fc61f814141",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 11",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "b85981541b38b506",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 12",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "0a99319ae17527c7",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 13",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "3ac20ba01ae10b75",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 14",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1260,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "aa75ae2e3d0ba6a0",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 15",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1260,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "a299e8f53df1d00c",
+        "type": "change",
+        "z": "58ee3731341e81a1",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "weightDifference",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 990,
+        "y": 420,
+        "wires": [
+            [
+                "c8de3ead59b5323f",
+                "aa75ae2e3d0ba6a0"
+            ]
+        ]
+    },
+    {
+        "id": "ce4dc8695323abc8",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "g": "d4efdf2c8b84c91f",
+        "name": "Turn off Irrigation",
+        "func": "let solenoidState = flow.get(\"solenoidState\");\n//let median = msg.payload;\nlet median = flow.get(\"LoadCellMedian\")\nlet solenoid = flow.get('solenoid') || 1;\n//let wasOn = flow.get(\"wasOn\");\n\n// --- Initialize persistent variables ---\nlet buffer = context.get(\"buffer\") || [];        // Rolling 60-element buffer\nlet avgHistory = context.get(\"avgHistory\") || []; // Store averages for trend check\nlet prevSolenoid = context.get(\"prevSolenoid\");\n\n// --- Reset logic: when solenoid goes from ON to OFF ---\nif (prevSolenoid === 1 && solenoidState === 0) {\n    buffer = [];\n    avgHistory = [];\n    node.status({ fill: \"grey\", shape: \"dot\", text: \"Reset buffer (solenoid OFF)\" });\n    node.warn(\"🧹 Solenoid OFF → buffer reset\");\n}\n\n// --- Only process when solenoid is ON ---\nif (msg.topic === \"LoadCellMedian\" && solenoidState === 1 && typeof msg.payload === \"number\" && !isNaN(median)) {\n\n    // Add new median value to buffer\n    buffer.push(median);\n    if (buffer.length > 10) buffer.shift(); // maintain rolling window of 60 elements\n\n    // Only compute average if buffer is full (60 samples)\n    if (buffer.length === 10) {\n        let avg = buffer.reduce((a, b) => a + b, 0) / buffer.length;\n        avgHistory.push(avg);\n        if (avgHistory.length > 2) avgHistory.shift(); // Keep only last 2 averages\n\n        // Check if we have two averages to compare\n        if (avgHistory.length === 2) {\n            let diff = Math.abs(avgHistory[1] - avgHistory[0]);\n            node.status({ fill: \"blue\", shape: \"ring\", text: `Δavg=${diff.toFixed(2)}g` });\n\n            node.warn(`📊 avgHistory: [${avgHistory[0].toFixed(2)}, ${avgHistory[1].toFixed(2)}], Δavg = ${diff.toFixed(2)}g`);\n\n            // If difference < 3g → stop watering\n            if (diff < 3) {\n                msg.payload = \"autoOff\";\n                msg.topic = \"greenhouse/control\";\n                node.status({ fill: \"red\", shape: \"dot\", text: \"AutoOff (Δ<3g)\" });\n                node.warn(`🛑 AutoOff triggered — avg change < 3g (${diff.toFixed(2)}g)`);\n                flow.set(\"solenoid\",0);\n                //wasOn = false;\n            } else {\n                // Otherwise, keep running (no output)\n                msg = null;\n            }\n        } else {\n            // Not enough averages yet\n            msg = null;\n        }\n    } else {\n        node.status({ fill: \"green\", shape: \"dot\", text: `Buffer: ${buffer.length}/60` });\n        msg = null;\n    }\n} else {\n    msg = null; // Solenoid OFF → ignore readings\n}\n\n// Reset when solenoid first turns ON (fresh cycle)\nif (prevSolenoid === 0 && solenoidState === 1) {\n    buffer = [];\n    avgHistory = [];\n    node.status({ fill: \"green\", shape: \"dot\", text: \"New irrigation cycle → reset\" });\n    node.warn(\"🌱 New solenoid ON → reset buffer and avgHistory\");\n}\n\n\n// --- Save state ---\ncontext.set(\"buffer\", buffer);\ncontext.set(\"avgHistory\", avgHistory);\ncontext.set(\"prevSolenoid\", solenoidState);\n//flow.set(\"wasOn\", wasOn);\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 640,
+        "wires": [
+            [
+                "1ef256e296a9629d"
+            ]
+        ]
+    },
+    {
+        "id": "1ef256e296a9629d",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1260,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "64a44fa7a472629a",
+        "type": "change",
+        "z": "58ee3731341e81a1",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "solenoidState",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 580,
+        "y": 660,
+        "wires": [
+            [
+                "ce4dc8695323abc8"
+            ]
+        ]
+    },
+    {
+        "id": "d5c88609bbe27ffc",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "g": "572eb4aab33744c2",
+        "name": "Max",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[0.0, 0.0, 0.0, 800.0, 1000.0, 900.0]",
+        "payloadType": "json",
+        "x": 110,
+        "y": 440,
+        "wires": [
+            [
+                "759e8f93695610b4"
+            ]
+        ]
+    },
+    {
+        "id": "fd36265826fbd635",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Activate Irrigation",
+        "func": "// --- Existing variables ---\nlet weightDifference = flow.get('weightDifference');\nlet measuredValue = flow.get('LoadCellMedian');\nlet maxWeight = flow.get('maxWeight');\n\nif (maxWeight === undefined || maxWeight === null || isNaN(maxWeight)) {\n    maxWeight = 981.2; // Default starting max weight in grams\n    flow.set('maxWeight', maxWeight);\n    node.warn(`⚙️ No stored maxWeight found. Default set to ${maxWeight} g`);\n}\n\n// --- Get current local hour ---\nlet now = new Date();\nlet currentHour = now.getHours(); // 0–23 in local time\n\n// --- Default state ---\n// msg.payload = \"autoOff\";\n// msg.topic = \"greenhouse/control\";\n\n// --- Check time window (9AM–1PM) ---\nlet isWithinTime = (currentHour >= 9 && currentHour < 13);\n\n// --- Main logic ---\nif (isWithinTime) {\n\n    // Case 1: weight is below threshold → start watering\n    if (measuredValue < (maxWeight - weightDifference)) {\n        msg.payload = \"autoOn\";\n        node.status({ fill: \"green\", shape: \"dot\", text: \"Watering (autoOn)\" });\n        //node.warn(`💧 Watering started: currentHour=${currentHour}, weight=${measuredValue}`);\n    }\n\n    // Case 2: within normal range → no watering\n    //else {\n      //  msg.payload = \"autoOff\";\n        //node.status({ fill: \"blue\", shape: \"ring\", text: \"Weight OK (autoOff)\" });\n       // node.warn(`✅ No watering needed: weight within range (${measuredValue})`);\n    //}\n\n} else {\n    // Outside allowed hours\n    msg.payload = \"autoOff\";\n    node.status({ fill: \"yellow\", shape: \"ring\", text: \"Outside watering hours\" });\n    node.warn(`⚠️ Not watering: current time ${currentHour}:00 is outside 9–13 window`);\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 960,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f34ae4360df86dc0",
+        "type": "comment",
+        "z": "58ee3731341e81a1",
+        "name": "Old nodes",
+        "info": "",
+        "x": 380,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "214ffac3f8aacdcc",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Max Values Weight ",
+        "func": "// Get saved state from context\nlet active = context.get(\"active\") || false;\nlet timer = context.get(\"timer\");\nlet maxWeight = context.get(\"maxWeight\");\n\n// Handle solenoid trigger\nif (msg.topic === \"solenoidState\" && msg.payload === \"trigger\") {\n    node.warn(\"Trigger received: will store median data for 10 minutes.\");\n\n    // If already active, reset the timer\n    if (timer) clearTimeout(timer);\n\n    // Start a 10-minute window (600,000 ms)\n    timer = setTimeout(() => {\n        node.warn(\"10 minutes elapsed — storing last median value.\");\n        let latestWeight = flow.get(\"maxWeight\"); // get freshest data\n        let output = {\n            topic: \"SavedMaxWeight\",\n            payload: latestWeight\n         //   payload: maxWeight\n        };\n        node.send(output); // send the saved value\n        context.set(\"active\", false);\n        context.set(\"timer\", null);\n    // }, 10 * 60 * 1000);\n    }, 5000);\n\n    // Update context\n    context.set(\"active\", true);\n    context.set(\"timer\", timer);\n    return null; // don’t output yet\n}\n\n// If receiving median values\n//if (msg.topic === \"LoadCellMedian\" && active) {\n//    maxWeight = msg.payload;\n //   context.set(\"maxWeight\", maxWeight);\n    flow.set(\"maxWeight\", maxWeight);\n //   node.status({fill:\"green\", shape:\"dot\", text:\"Recording median\"});\n//}\n\n// Not doing anything otherwise\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 1020,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "97a363ebe9c11163",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Get Median Load Cell Value",
+        "func": "// Get the payload from the previous node (array of all data)\nlet data = msg.payload;\n\n// Extract weight1, weight2, weight3 (indexes 3, 4, 5)\nlet values = [data[3], data[4], data[5]];\n\n// Sort the values in ascending order\nvalues.sort((a, b) => a - b);\n\n// Compute the median (middle value after sorting)\nlet median;\nif (values.length === 3) {\n    median = values[1]; // middle element of 3 values\n} else {\n    // Just in case there’s a different number of values\n    let mid = Math.floor(values.length / 2);\n    median = values.length % 2 !== 0\n        ? values[mid]\n        : (values[mid - 1] + values[mid]) / 2;\n}\n\n// Output median value\nmsg.payload = median;\nmsg.topic = \"LoadCellMedian\";\nflow.set(\"LoadCellMedian\", median);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 1220,
+        "wires": [
+            [
+                "c9107b86ec1b89b5",
+                "707013499b81851d",
+                "c9b5369fdaf07115",
+                "313001fbb8e68235"
+            ]
+        ]
+    },
+    {
+        "id": "4cedad725d36d4ea",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Solenoid State",
+        "func": "// Get previous solenoid value from node context\nlet prev = context.get('prev');\nlet current = msg.payload;\n\n// Default previous value if not set yet\nif (prev === undefined) {\n    context.set('prev', current);\n    return null; // skip first message\n}\n\n// Detect falling edge: 1 → 0\nif (prev === 1 && current === 0) {\n    node.warn(\"Solenoid changed from 1 → 0\");\n    msg.topic = \"solenoidState\";\n    msg.payload = \"trigger\";\n    context.set('prev', current);\n    return msg; // output the trigger message\n}\n\n// Update stored value for next comparison\ncontext.set('prev', current);\nflow.set('solenoidState', current);\nreturn null; // no change, so no output",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 1280,
+        "wires": [
+            [
+                "c9107b86ec1b89b5",
+                "36119acb8ed39bc2"
+            ]
+        ]
+    },
+    {
+        "id": "c9107b86ec1b89b5",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Max Values Weight ",
+        "func": "// Get saved state from context\nlet active = context.get(\"active\") || false;\nlet timer = context.get(\"timer\");\n\n// Handle solenoid trigger\nif (msg.topic === \"solenoidState\" && msg.payload === \"trigger\") {\n    node.warn(\"Trigger received: will store latest median in 10 minutes.\");\n\n    // If already active, reset the timer\n    if (timer) clearTimeout(timer);\n\n    // Start timer (e.g. 15 seconds for testing)\n    timer = setTimeout(() => {\n        // ⬇️ Get the *latest* value from flow at the end of the timer\n        let latestMaxWeight = flow.get(\"LoadCellMedian\");\n\n        if (latestMaxWeight !== undefined && latestMaxWeight !== null && !isNaN(latestMaxWeight)) {\n            flow.set(\"maxWeight\", latestMaxWeight);\n            node.warn(`✅ Saved latest maxWeight: ${latestMaxWeight}`);\n            node.status({ fill: \"green\", shape: \"dot\", text: `Saved: ${latestMaxWeight}` });\n            \n            let dashboardMsg = {\n        topic: \"maxWeight\",\n        payload: latestMaxWeight\n    };\n    node.send(dashboardMsg); // send value out of the function\n        } else {\n            node.warn(\"⚠️ No valid LoadCellMedian found to save.\");\n            node.status({ fill: \"red\", shape: \"ring\", text: \"No valid LoadCellMedian\" });\n        }\n\n        context.set(\"active\", false);\n        context.set(\"timer\", null);\n    }, 10*60*1000); // ←(or 10*60*1000 for 10 minutes)\n\n    // Save timer reference\n    context.set(\"active\", true);\n    context.set(\"timer\", timer);\n    return null;\n}\n\n// Not doing anything otherwise\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 1280,
+        "wires": [
+            [
+                "707013499b81851d",
+                "4b6afdbdea1623be"
+            ]
+        ]
+    },
+    {
+        "id": "a9e80fe53ee760b1",
+        "type": "change",
+        "z": "58ee3731341e81a1",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "solenoidState",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 920,
+        "y": 1340,
+        "wires": [
+            [
+                "c9b5369fdaf07115"
+            ]
+        ]
+    },
+    {
+        "id": "a416094083e24379",
+        "type": "change",
+        "z": "58ee3731341e81a1",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "weightDifference",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1030,
+        "y": 1180,
+        "wires": [
+            [
+                "707013499b81851d"
+            ]
+        ]
+    },
+    {
+        "id": "707013499b81851d",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Activate Irrigation",
+        "func": "// --- Existing variables ---\nlet weightDifference = flow.get('weightDifference');\nlet measuredValue = flow.get('LoadCellMedian');\nlet maxWeight = flow.get('maxWeight');\nlet solenoid = flow.get('solenoid') || 0;\n\nif (maxWeight === undefined || maxWeight === null || isNaN(maxWeight)) {\n    maxWeight = 981.2; // Default starting max weight in grams\n    flow.set('maxWeight', maxWeight);\n    node.warn(`⚙️ No stored maxWeight found. Default set to ${maxWeight} g`);\n}\n\n// --- Get current local hour ---\nlet now = new Date();\nlet currentHour = now.getHours(); // 0–23 in local time\n\n// --- Check time window (9AM–1PM) ---\nlet isWithinTime = (currentHour >= 9 && currentHour < 13);\n\n// --- Main logic ---\nif (isWithinTime) {\n\n    // Case 1: weight is below threshold → start watering\n    if (measuredValue < (maxWeight - weightDifference)) { \n        msg.payload = \"autoOn\";\n        node.status({ fill: \"green\", shape: \"dot\", text: \"Watering (autoOn)\" });\n        flow.set(\"solenoid\", 1);\n        node.warn(`💧 Watering started: currentHour=${currentHour}, weight=${measuredValue}`);\n     }\n\n} else {\n    // Outside allowed hours\n    msg.payload = \"autoOff\";\n    node.status({ fill: \"yellow\", shape: \"ring\", text: \"Outside watering hours\" });\n    node.warn(`⚠️ Not watering: current time ${currentHour}:00 is outside 9–13 window`);\n    \n}\n// --- Auto-refresh display even if no message sent ---\nif (solenoid === 1) {\n    node.status({ fill: \"green\", shape: \"dot\", text: \"Watering (autoOn)\" });\n} else if (solenoid === 0) {\n    node.status({ fill: \"red\", shape: \"ring\", text: \"Irrigation OFF\" });\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1290,
+        "y": 1280,
+        "wires": [
+            [
+                "83cf1757ad037da3"
+            ]
+        ]
+    },
+    {
+        "id": "c9b5369fdaf07115",
+        "type": "function",
+        "z": "58ee3731341e81a1",
+        "name": "Turn Off Irrigation",
+        "func": "let solenoidState = flow.get(\"solenoidState\");\nlet median = flow.get(\"LoadCellMedian\")\nlet solenoid = flow.get('solenoid') || 1;\n\n// --- Initialize persistent variables ---\nlet buffer = context.get(\"buffer\") || [];        // Rolling 60-element buffer\nlet avgHistory = context.get(\"avgHistory\") || []; // Store averages for trend check\nlet prevSolenoid = context.get(\"prevSolenoid\");\n\n// --- Reset logic: when solenoid goes from ON to OFF ---\nif (prevSolenoid === 1 && solenoidState === 0) {\n    buffer = [];\n    avgHistory = [];\n    node.status({ fill: \"grey\", shape: \"dot\", text: \"Reset buffer (solenoid OFF)\" });\n    node.warn(\"🧹 Solenoid OFF → buffer reset\");\n}\n\n// --- Only process when solenoid is ON ---\nif (msg.topic === \"LoadCellMedian\" && solenoidState === 1 && typeof msg.payload === \"number\" && !isNaN(median)) {\n\n    // Add new median value to buffer\n    buffer.push(median);\n    if (buffer.length > 60) buffer.shift(); // maintain rolling window of 60 elements\n\n    // Only compute average if buffer is full (60 samples)\n    if (buffer.length === 60) {\n        let avg = buffer.reduce((a, b) => a + b, 0) / buffer.length;\n        avgHistory.push(avg);\n        if (avgHistory.length > 2) avgHistory.shift(); // Keep only last 2 averages\n\n        // Check if we have two averages to compare\n        if (avgHistory.length === 2) {\n            let diff = Math.abs(avgHistory[1] - avgHistory[0]);\n            node.status({ fill: \"blue\", shape: \"ring\", text: `Δavg=${diff.toFixed(2)}g` });\n\n            // If difference < 3g → stop watering\n            if (diff < 3) {\n                msg.payload = \"autoOff\";\n                msg.topic = \"greenhouse/control\";\n                node.status({ fill: \"red\", shape: \"dot\", text: \"AutoOff (Δ<3g)\" });\n                node.warn(`🛑 AutoOff triggered — avg change < 3g (${diff.toFixed(2)}g)`);\n                flow.set(\"solenoid\", 0);\n            } else {\n                // Otherwise, keep running (no output)\n                msg = null;\n            }\n        } else {\n            // Not enough averages yet\n            msg = null;\n        }\n    } else {\n        node.status({ fill: \"green\", shape: \"dot\", text: `Buffer: ${buffer.length}/60` });\n        msg = null;\n    }\n} else {\n    msg = null; // Solenoid OFF → ignore readings\n}\n\n// --- Save state ---\ncontext.set(\"buffer\", buffer);\ncontext.set(\"avgHistory\", avgHistory);\ncontext.set(\"prevSolenoid\", solenoidState);\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1290,
+        "y": 1320,
+        "wires": [
+            [
+                "1c6b5cf565b2a9bf"
+            ]
+        ]
+    },
+    {
+        "id": "70a818d229a7267d",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "solenoidState",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 120,
+        "y": 1360,
+        "wires": [
+            [
+                "4cedad725d36d4ea",
+                "766e6a80e2bbe7a6"
+            ]
+        ]
+    },
+    {
+        "id": "8a4a5b43d91d1d9b",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "solenoidState",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 140,
+        "y": 1400,
+        "wires": [
+            [
+                "4cedad725d36d4ea",
+                "a9e80fe53ee760b1",
+                "766e6a80e2bbe7a6"
+            ]
+        ]
+    },
+    {
+        "id": "9550ebcafdbe799d",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "name": "Min",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[0.0, 0.0, 0.0, 600.0, 400.0, 500.0]",
+        "payloadType": "json",
+        "x": 130,
+        "y": 1280,
+        "wires": [
+            [
+                "97a363ebe9c11163"
+            ]
+        ]
+    },
+    {
+        "id": "f181b5305878a3ef",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "name": "Max",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[0.0, 0.0, 0.0, 800.0, 700.0, 900.0]",
+        "payloadType": "json",
+        "x": 150,
+        "y": 1240,
+        "wires": [
+            [
+                "97a363ebe9c11163"
+            ]
+        ]
+    },
+    {
+        "id": "da55d54550b89928",
+        "type": "inject",
+        "z": "58ee3731341e81a1",
+        "name": "Max",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[0.0, 0.0, 0.0, 800.0, 1000.0, 900.0]",
+        "payloadType": "json",
+        "x": 130,
+        "y": 1200,
+        "wires": [
+            [
+                "97a363ebe9c11163"
+            ]
+        ]
+    },
+    {
+        "id": "36119acb8ed39bc2",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 16",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 580,
+        "y": 1480,
+        "wires": []
+    },
+    {
+        "id": "313001fbb8e68235",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 17",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 660,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "4b6afdbdea1623be",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 18",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1040,
+        "y": 1420,
+        "wires": []
+    },
+    {
+        "id": "1c6b5cf565b2a9bf",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 19",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1280,
+        "y": 1460,
+        "wires": []
+    },
+    {
+        "id": "83cf1757ad037da3",
+        "type": "debug",
+        "z": "58ee3731341e81a1",
+        "name": "debug 20",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1300,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "allowUpdateSwitch",
+        "type": "ui_switch",
+        "z": "58ee3731341e81a1",
+        "name": "Allow Update",
+        "label": "Allow Update",
+        "tooltip": "",
+        "group": "dashboard",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "greenhouse/table1/allowUpdate",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "className": "",
+        "x": 150,
+        "y": 160,
+        "wires": [
+            [
+                "mqttOutAllow"
+            ]
+        ]
+    },
+    {
+        "id": "thresholdInput",
+        "type": "ui_numeric",
+        "z": "58ee3731341e81a1",
+        "name": "Threshold Input",
+        "label": "Moisture Threshold",
+        "tooltip": "",
+        "group": "dashboard",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": true,
+        "topic": "",
+        "topicType": "str",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "className": "",
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "combineGate"
+            ]
+        ]
+    },
+    {
+        "id": "311169565c1db341",
+        "type": "ui_numeric",
+        "z": "58ee3731341e81a1",
+        "g": "3f9c7c9aca793a32",
+        "name": "Threshold Input",
+        "label": "Moisture Threshold",
+        "tooltip": "",
+        "group": "",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": true,
+        "topic": "weightDifference",
+        "topicType": "str",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1000",
+        "step": "50",
+        "className": "",
+        "x": 760,
+        "y": 420,
+        "wires": [
+            [
+                "a299e8f53df1d00c"
+            ]
+        ]
+    },
+    {
+        "id": "feb6ef45ed044a9c",
+        "type": "ui_numeric",
+        "z": "58ee3731341e81a1",
+        "name": "Threshold Input",
+        "label": "Weight Difference Threshold",
+        "tooltip": "",
+        "group": "",
+        "order": 1,
+        "width": 5,
+        "height": 2,
+        "wrap": false,
+        "passthru": true,
+        "topic": "weightDifference",
+        "topicType": "msg",
+        "format": "{{msg.payload}}",
+        "min": 0,
+        "max": "1000",
+        "step": "50",
+        "className": "",
+        "x": 820,
+        "y": 1180,
+        "wires": [
+            [
+                "a416094083e24379"
+            ]
+        ]
+    },
+    {
+        "id": "47abfec32f95a47b",
+        "type": "ui_text",
+        "z": "58ee3731341e81a1",
+        "g": "3f9c7c9aca793a32",
+        "group": "",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Stored Max Weight",
+        "format": "{{msg.payload}}",
+        "layout": "row-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 750,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "766e6a80e2bbe7a6",
+        "type": "ui_template",
+        "z": "58ee3731341e81a1",
+        "group": "",
+        "name": "interface",
+        "order": 2,
+        "width": 5,
+        "height": 1,
+        "format": "<div style=\"font-size: 18px;\">\n    Irrigation Status:\n    <span id=\"dataStatus\"></span>\n</div>\n\n<script>\n(function(scope) {\n\n    scope.$watch('msg.payload', function(payload) {\n        const el = document.getElementById(\"dataStatus\");\n        if (!el) return;\n\n        // Normalize value to 0/1\n        let val = Number(String(payload).trim());\n\n        if (val === 1) {\n            el.textContent = \" ON\";\n            el.style.color = \"green\";\n            el.style.fontWeight = \"bold\";\n        } else {\n            el.textContent = \" OFF\";\n            el.style.color = \"red\";\n            el.style.fontWeight = \"bold\";\n        }\n    });\n\n})(scope);\n</script>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 280,
+        "y": 1460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8111807cbac1786c",
+        "type": "ui_template",
+        "z": "58ee3731341e81a1",
+        "group": "",
+        "name": "interface",
+        "order": 2,
+        "width": 5,
+        "height": 1,
+        "format": "<div style=\"font-size: 18px;\">\n  Irrigation Status:\n  <span id=\"dataStatus\"></span>\n</div>\n\n<script>\n(function(scope) {\n\n    scope.$watch('msg', function(msg) {\n        if (!msg) return;\n\n        let payload = msg.payload;\n        const el = document.getElementById(\"dataStatus\");\n        if (!el) return;\n\n        let val = (typeof payload === \"string\") ? payload.trim() : payload;\n        console.log(\"Received payload:\", val);\n\n        if (val == 1) {\n            el.textContent = \" ON\";\n            el.style.color = \"green\";\n            el.style.fontWeight = \"bold\";\n        } else {\n            el.textContent = \" OFF\";\n            el.style.color = \"red\";\n            el.style.fontWeight = \"bold\";\n        }\n    });\n\n})(scope);\n</script>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 353.1596984863281,
+        "y": 1618.5416259765625,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "mqttBroker",
+        "type": "mqtt-broker",
+        "name": "Local MQTT",
+        "broker": "192.168.2.16",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "961cb9de210cd03b",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
