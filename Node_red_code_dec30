@@ -1,0 +1,1992 @@
+[
+    {
+        "id": "407901e793da6dec",
+        "type": "tab",
+        "label": "Greenhouse",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "d9fe37b3e538fd48",
+        "type": "mqtt in",
+        "z": "407901e793da6dec",
+        "name": "Table 1 ESP32",
+        "topic": "greenhouse/table1/data",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "9cc7a1fdf15e6ba7",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 140,
+        "y": 180,
+        "wires": [
+            [
+                "d1b2f87995731d74",
+                "694132f75828f56b"
+            ]
+        ]
+    },
+    {
+        "id": "d1b2f87995731d74",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 340,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "694132f75828f56b",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Parse",
+        "func": "let data = msg.payload; \n//let now = new Date();\n\n// --- Format as ISO string for SQLite ---\n//let localISO = now.toISOString().slice(0, 19).replace('T', ' '); // \"YYYY-MM-DD HH:MM:SS\"\n\nmsg.topic = \"INSERT INTO greenhouse_table1_weight (timestamp, device_id, temperature, humidity, weight1, weight2, weight3, averageWeight, weightDifference, solenoid, fan, manual) VALUES (datetime('now', 'localtime'), $device_id, $temperature, $humidity, $weight1, $weight2, $weight3, $averageWeight, $weightDifference, $solenoid, $fan, $manual)\"; \n// Use device ID to identify the ESP32 (you can hardcode for now) \nmsg.payload = [\"table1\", data.temperature, data.humidity,data.weight1, data.weight2, data.weight3, data.averageWeight, data.weightDifference, data.solenoid ? 1 : 0, data.fan ? 1 : 0, data.manual ? 1 : 0]; \nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 240,
+        "wires": [
+            [
+                "a90ea28b06536e02",
+                "4931a4c8a6b0f477",
+                "9e32902a2ecdd238",
+                "2618f8207ed1d890"
+            ]
+        ]
+    },
+    {
+        "id": "4931a4c8a6b0f477",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "dfd01a4de61a4022",
+        "type": "mqtt out",
+        "z": "407901e793da6dec",
+        "name": "Table 1 ESP32 Command",
+        "topic": "greenhouse/table1/command",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "9cc7a1fdf15e6ba7",
+        "x": 710,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "41062adb918a6d5e",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "UI messages",
+        "func": "let mode = msg.payload\nif (mode === \"auto\"){\n    msg.payload = \"<span style='color:green;font-weight:bold;'>Auto</span>\";\n} else {\n    msg.payload = \"<span style='color:red;font-weight:bold;'>Manual</span>\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 560,
+        "wires": [
+            [
+                "d327423373e17ffc"
+            ]
+        ]
+    },
+    {
+        "id": "1cbab0df89fd1062",
+        "type": "file in",
+        "z": "407901e793da6dec",
+        "name": "Image From File",
+        "filename": "/home/orchid-pi/Pictures/LeParadisDesOrchidees",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 350,
+        "y": 720,
+        "wires": [
+            [
+                "88a4b3ebdb5f58d9"
+            ]
+        ]
+    },
+    {
+        "id": "88a4b3ebdb5f58d9",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Read Image in base64",
+        "func": "msg.payload = Buffer.from(msg.payload, \"base64\")\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2a36c2b8ec5b33aa",
+        "type": "inject",
+        "z": "407901e793da6dec",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 720,
+        "wires": [
+            [
+                "1cbab0df89fd1062"
+            ]
+        ]
+    },
+    {
+        "id": "657bec48a92d7f61",
+        "type": "inject",
+        "z": "407901e793da6dec",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "c«xv",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 80,
+        "wires": [
+            [
+                "9c9ef3c29a88248d"
+            ]
+        ]
+    },
+    {
+        "id": "9c9ef3c29a88248d",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 340,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "586459309f67b7ba",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Activate Irrigation",
+        "func": "// --- Existing variables ---\nlet weightDifference = flow.get('weightDifference');\nlet measuredValue = flow.get('LoadCellMedian');\nlet maxWeight = flow.get('maxWeight');\nlet solenoid = flow.get('solenoid') || 0;\n\n  node.warn(`💧 weight diff=${weightDifference}, weight=${measuredValue}, max=${maxWeight}`);\n\nif (maxWeight === undefined || maxWeight === null || isNaN(maxWeight)) {\n    maxWeight = 981.2; // Default starting max weight in grams\n    flow.set('maxWeight', maxWeight);\n    node.warn(`⚙️ No stored maxWeight found. Default set to ${maxWeight} g`);\n}\n\n// --- Get current local hour ---\nlet now = new Date();\nlet currentHour = now.getHours(); // 0–23 in local time\n\n// --- Check time window (9AM–1PM) ---\nlet isWithinTime = (currentHour >= 9 && currentHour < 13);\n\n// --- Main logic ---\nif (isWithinTime) {\n\n    // Case 1: weight is below threshold → start watering\n    if (measuredValue < (maxWeight - weightDifference)) { \n        msg.payload = \"autoOn\";\n        node.status({ fill: \"green\", shape: \"dot\", text: \"Watering (autoOn)\" });\n        flow.set(\"solenoid\", 1);\n        node.warn(`💧 Watering started: currentHour=${currentHour}, weight=${measuredValue}`);\n     }\n\n} else {\n    // Outside allowed hours\n    msg.payload = \"autoOff\";\n    node.status({ fill: \"yellow\", shape: \"ring\", text: \"Outside watering hours\" });\n    node.warn(`⚠️ Not watering: current time ${currentHour}:00 is outside 9–13 window`);\n    \n}\n// --- Auto-refresh display even if no message sent ---\nif (solenoid === 1) {\n    node.status({ fill: \"green\", shape: \"dot\", text: \"Watering (autoOn)\" });\n} else if (solenoid === 0) {\n    node.status({ fill: \"red\", shape: \"ring\", text: \"Irrigation OFF\" });\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1790,
+        "y": 140,
+        "wires": [
+            [
+                "aaf55395f90ae743",
+                "976b3e2b356bba98"
+            ]
+        ]
+    },
+    {
+        "id": "9e32902a2ecdd238",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Extract Solenoid Data",
+        "func": "// Extract just the solenoid value from the parsed message\nlet data = msg.payload;\n\nmsg.payload = data[8]; // solenoid index in your payload array\nmsg.topic = \"solenoidState\";\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 180,
+        "wires": [
+            [
+                "64f109acb0cdcbb4",
+                "51286e6b921b349c",
+                "f09d4ff5a42d5c09",
+                "7bfe6cc850b2d10c"
+            ]
+        ]
+    },
+    {
+        "id": "64f109acb0cdcbb4",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 8",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1020,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "ef749e16b411f307",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 9",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1180,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "51286e6b921b349c",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Solenoid State",
+        "func": "// Get previous solenoid value from node context\nlet prev = context.get('prev');\nlet current = msg.payload;\n\n// Default previous value if not set yet\nif (prev === undefined) {\n    context.set('prev', current);\n    return null; // skip first message\n}\n\n// Detect falling edge: 1 → 0\nif (prev === 1 && current === 0) {\n    node.warn(\"Solenoid changed from 1 → 0\");\n    msg.topic = \"solenoidState\";\n    msg.payload = \"trigger\";\n    context.set('prev', current);\n    return msg; // output the trigger message\n}\n\n// Update stored value for next comparison\ncontext.set('prev', current);\nflow.set('solenoidState', current);\nreturn null; // no change, so no output",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1020,
+        "y": 140,
+        "wires": [
+            [
+                "ef749e16b411f307",
+                "b01ba67ea4c20403"
+            ]
+        ]
+    },
+    {
+        "id": "b01ba67ea4c20403",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Max Values Weight ",
+        "func": "// Get saved state from context\nlet active = context.get(\"active\") || false;\nlet timer = context.get(\"timer\");\n\n// Handle solenoid trigger\nif (msg.topic === \"solenoidState\" && msg.payload === \"trigger\") {\n    node.warn(\"Trigger received: will store latest median in 10 minutes.\");\n\n    // If already active, reset the timer\n    if (timer) clearTimeout(timer);\n\n    // Start timer (e.g. 15 seconds for testing)\n    timer = setTimeout(() => {\n        // ⬇️ Get the *latest* value from flow at the end of the timer\n        let latestMaxWeight = flow.get(\"LoadCellMedian\");\n\n        if (latestMaxWeight !== undefined && latestMaxWeight !== null && !isNaN(latestMaxWeight)) {\n            flow.set(\"maxWeight\", latestMaxWeight);\n            node.warn(`✅ Saved latest maxWeight: ${latestMaxWeight}`);\n            node.status({ fill: \"green\", shape: \"dot\", text: `Saved: ${latestMaxWeight}` });\n            \n            let dashboardMsg = {\n        topic: \"maxWeight\",\n        payload: latestMaxWeight\n    };\n    node.send(dashboardMsg); // send value out of the function\n        } else {\n            node.warn(\"⚠️ No valid LoadCellMedian found to save.\");\n            node.status({ fill: \"red\", shape: \"ring\", text: \"No valid LoadCellMedian\" });\n        }\n\n        context.set(\"active\", false);\n        context.set(\"timer\", null);\n    }, 10*60*1000); // ←(or 10*60*1000 for 10 minutes)\n\n    // Save timer reference\n    context.set(\"active\", true);\n    context.set(\"timer\", timer);\n    return null;\n}\n\n// Not doing anything otherwise\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1250,
+        "y": 140,
+        "wires": [
+            [
+                "586459309f67b7ba",
+                "df35c245d01e1f23",
+                "17c2ec575b118090"
+            ]
+        ]
+    },
+    {
+        "id": "2618f8207ed1d890",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Get Median Load Cell Value",
+        "func": "// Get the payload from the previous node (array of all data)\nlet data = msg.payload;\n\n// Extract weight1, weight2, weight3 (indexes 3, 4, 5)\nlet values = [data[3], data[4], data[5]];\n\n// Sort the values in ascending order\nvalues.sort((a, b) => a - b);\n\n// Compute the median (middle value after sorting)\nlet median;\nif (values.length === 3) {\n    median = values[1]; // middle element of 3 values\n} else {\n    // Just in case there’s a different number of values\n    let mid = Math.floor(values.length / 2);\n    median = values.length % 2 !== 0\n        ? values[mid]\n        : (values[mid - 1] + values[mid]) / 2;\n}\n\n// Output median value\nmsg.payload = median;\nmsg.topic = \"LoadCellMedian\";\nflow.set(\"LoadCellMedian\", median);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 80,
+        "wires": [
+            [
+                "b01ba67ea4c20403",
+                "586459309f67b7ba",
+                "4fbae0cbf2747046",
+                "9de8116aad42a563"
+            ]
+        ]
+    },
+    {
+        "id": "9c2e13e385f93bb8",
+        "type": "change",
+        "z": "407901e793da6dec",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "weightDifference",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1570,
+        "y": 60,
+        "wires": [
+            [
+                "586459309f67b7ba"
+            ]
+        ]
+    },
+    {
+        "id": "dde4b0b330622a87",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Plot DB Data",
+        "func": "// Get data from SQL node\nlet data = msg.payload;\n\n// Check if valid array\nif (!Array.isArray(data) || data.length === 0) {\n    node.warn(\"No data or bad format\");\n    return null;\n}\n\n// Convert timestamp/averageWeight into x/y pairs\nlet chartData = data.map(row => ({\n    x: row.time_bin,\n    y: row.avgWeight\n}));\n\n// Reverse order if you want oldest → newest (charts like ascending x)\nchartData.reverse();\n\n// Send to dashboard chart\nmsg.payload = [{\n    series: [\"Average Weight\"],\n    data: [chartData],\n    labels: []\n}];\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 740,
+        "wires": [
+            [
+                "fb1c87034dcbd31e"
+            ]
+        ]
+    },
+    {
+        "id": "c438f64ee7122f9b",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Get weight1 values",
+        "func": "msg.topic = \"SELECT timestamp, weight1 FROM greenhouse_table1_weight ORDER BY timestamp DESC LIMIT 1\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 900,
+        "wires": [
+            [
+                "2a0c512b21d1c915"
+            ]
+        ]
+    },
+    {
+        "id": "da41474ad4e44c41",
+        "type": "inject",
+        "z": "407901e793da6dec",
+        "name": "inject data",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "300",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 210,
+        "y": 900,
+        "wires": [
+            [
+                "c438f64ee7122f9b",
+                "c1fb32c1cac10a95",
+                "b0f4916d5315f327"
+            ]
+        ]
+    },
+    {
+        "id": "c96dbacb0397d069",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "weight1",
+        "func": "if (msg.payload && msg.payload.length > 0) {\n    msg.payload = msg.payload[0].weight1; // just the number\n    return msg;\n} else {\n    node.warn(\"No weight data found\");\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 840,
+        "wires": [
+            [
+                "5309d8bffc70f10f"
+            ]
+        ]
+    },
+    {
+        "id": "c1fb32c1cac10a95",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Get weight2 values",
+        "func": "msg.topic = \"SELECT timestamp, weight2 FROM greenhouse_table1_weight ORDER BY timestamp DESC LIMIT 1\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 940,
+        "wires": [
+            [
+                "2a0c512b21d1c915"
+            ]
+        ]
+    },
+    {
+        "id": "b0f4916d5315f327",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Get weight3 values",
+        "func": "msg.topic = \"SELECT timestamp, weight3 FROM greenhouse_table1_weight ORDER BY timestamp DESC LIMIT 1\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 980,
+        "wires": [
+            [
+                "2a0c512b21d1c915"
+            ]
+        ]
+    },
+    {
+        "id": "ca2b4d9415147e72",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "weight2",
+        "func": "if (msg.payload && msg.payload.length > 0) {\n    msg.payload = msg.payload[0].weight2; // just the number\n    return msg;\n} else {\n    node.warn(\"No weight data found\");\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 880,
+        "wires": [
+            [
+                "0b91cbb06c53ae3b"
+            ]
+        ]
+    },
+    {
+        "id": "384bcabc2791d0cd",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "weight3",
+        "func": "if (msg.payload && msg.payload.length > 0) {\n    msg.payload = msg.payload[0].weight3; // just the number\n    return msg;\n} else {\n    node.warn(\"No weight data found\");\n    return null;\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 920,
+        "wires": [
+            [
+                "d5cedea489fe745d"
+            ]
+        ]
+    },
+    {
+        "id": "aeb99ad0bb86b245",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Set local time in sqlite",
+        "func": "msg.topic = \"UPDATE greenhouse_table1_weight SET timestamp = datetime('now','localtime');\";\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 280,
+        "wires": [
+            [
+                "a90ea28b06536e02"
+            ]
+        ]
+    },
+    {
+        "id": "03b7ac1dbc097b1c",
+        "type": "inject",
+        "z": "407901e793da6dec",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 200,
+        "y": 280,
+        "wires": [
+            [
+                "aeb99ad0bb86b245"
+            ]
+        ]
+    },
+    {
+        "id": "f09d4ff5a42d5c09",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "UI messages",
+        "func": "//let data = msg.payload;\n//let solenoid = Number(data[8]); // extract bit 8\nlet solenoid = msg.payload;\n\nmsg.topic = \"solenoidState\";\nmsg.payload = solenoid; // === 1 ? 1 : 0; // ensure it's 1 or 0, not undefined or NaN\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 280,
+        "wires": [
+            [
+                "bcba0eaaeb0685da",
+                "8368662176bf9c57"
+            ]
+        ]
+    },
+    {
+        "id": "4fbae0cbf2747046",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Turn Off Irrigation",
+        "func": "let solenoidState = flow.get(\"solenoidState\");\nlet median = flow.get(\"LoadCellMedian\")\nlet solenoid = flow.get('solenoid') || 1;\n\n// --- Initialize persistent variables ---\nlet buffer = context.get(\"buffer\") || [];        // Rolling 60-element buffer\nlet avgHistory = context.get(\"avgHistory\") || []; // Store averages for trend check\nlet prevSolenoid = context.get(\"prevSolenoid\");\n\n// --- Reset logic: when solenoid goes from ON to OFF ---\nif (prevSolenoid === 1 && solenoidState === 0) {\n    buffer = [];\n    avgHistory = [];\n    node.status({ fill: \"grey\", shape: \"dot\", text: \"Reset buffer (solenoid OFF)\" });\n    node.warn(\"🧹 Solenoid OFF → buffer reset\");\n}\n\n// --- Only process when solenoid is ON ---\nif (msg.topic === \"LoadCellMedian\" && solenoidState === 1 && typeof msg.payload === \"number\" && !isNaN(median)) {\n\n    // Add new median value to buffer\n    buffer.push(median);\n    if (buffer.length > 60) buffer.shift(); // maintain rolling window of 60 elements\n\n    // Only compute average if buffer is full (60 samples)\n    if (buffer.length === 60) {\n        let avg = buffer.reduce((a, b) => a + b, 0) / buffer.length;\n        avgHistory.push(avg);\n        if (avgHistory.length > 2) avgHistory.shift(); // Keep only last 2 averages\n\n        // Check if we have two averages to compare\n        if (avgHistory.length === 2) {\n            let diff = Math.abs(avgHistory[1] - avgHistory[0]);\n            node.status({ fill: \"blue\", shape: \"ring\", text: `Δavg=${diff.toFixed(2)}g` });\n\n\n            // If difference < 0.4g → stop watering\n            if (diff < 0.4) {\n                msg.payload = \"autoOff\";\n                msg.topic = \"greenhouse/control\";\n                node.status({ fill: \"red\", shape: \"dot\", text: \"AutoOff (Δ<0.4g)\" });\n                node.warn(`🛑 AutoOff triggered — avg change < 0.4g (${diff.toFixed(2)}g)`);\n                flow.set(\"solenoid\", 0);\n            } else {\n                // Otherwise, keep running (no output)\n                msg = null;\n            }\n        } else {\n            // Not enough averages yet\n            msg = null;\n        }\n    } else {\n        node.status({ fill: \"green\", shape: \"dot\", text: `Buffer: ${buffer.length}/60` });\n        msg = null;\n    }\n} else {\n    msg = null; // Solenoid OFF → ignore readings\n}\n\n// Reset when solenoid first turns ON (fresh cycle)\nif (prevSolenoid === 0 && solenoidState === 1) {\n    buffer = [];\n    avgHistory = [];\n    node.status({ fill: \"green\", shape: \"dot\", text: \"New irrigation cycle → reset\" });\n    node.warn(\"🌱 New solenoid ON → reset buffer and avgHistory\");\n}   \n\n// --- Save state ---\nnode.warn(`📊 avgHistory: [${avgHistory[0]}, ${avgHistory[1]}]`);\ncontext.set(\"buffer\", buffer);\ncontext.set(\"avgHistory\", avgHistory);\ncontext.set(\"prevSolenoid\", solenoidState);\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1730,
+        "y": 200,
+        "wires": [
+            [
+                "aaf55395f90ae743",
+                "5736dbb6e1c57c61"
+            ]
+        ]
+    },
+    {
+        "id": "7bfe6cc850b2d10c",
+        "type": "change",
+        "z": "407901e793da6dec",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "solenoidState",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1420,
+        "y": 200,
+        "wires": [
+            [
+                "4fbae0cbf2747046"
+            ]
+        ]
+    },
+    {
+        "id": "aaf55395f90ae743",
+        "type": "mqtt out",
+        "z": "407901e793da6dec",
+        "name": "",
+        "topic": "greenhouse/table1/command",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "9cc7a1fdf15e6ba7",
+        "x": 2080,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "6235908229deec48",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Set Diff Threshold",
+        "func": "flow.set(\"diffThreshold\", msg.payload);\nmsg.payload = `Difference threshold set to ${msg.payload}`;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 20,
+        "wires": [
+            [
+                "ebd66ab51b1ca18e"
+            ]
+        ]
+    },
+    {
+        "id": "f916dc7e9a866184",
+        "type": "inject",
+        "z": "407901e793da6dec",
+        "name": "",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "status",
+        "x": 620,
+        "y": 100,
+        "wires": [
+            [
+                "ebd66ab51b1ca18e"
+            ]
+        ]
+    },
+    {
+        "id": "f9cc7e0d00fafe0b",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Get weight values",
+        "func": "// Calculate timestamp for 7 days ago\nlet sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);\nlet isoDate = new Date(sevenDaysAgo).toISOString();\n\n// Query: group by 20-minute bins (1200 seconds)\nmsg.topic = `\nSELECT \n  datetime(strftime('%s', timestamp) / 1200 * 1200, 'unixepoch') AS time_bin,\n  AVG(averageWeight) AS avgWeight\nFROM greenhouse_table1_weight\nWHERE timestamp >= '${isoDate}'\nGROUP BY time_bin\nORDER BY time_bin ASC\n`;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 780,
+        "wires": [
+            [
+                "c9dd700b119e614e"
+            ]
+        ]
+    },
+    {
+        "id": "3a7a2df054d6e18e",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Get weight values",
+        "func": "// Calculate timestamp for 30 days ago\nlet MonthAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);\nlet isoDate = new Date(MonthAgo).toISOString();\n\n// Query: group data in 20-minute intervals (1200 seconds)\nmsg.topic = `\nSELECT \n    datetime(strftime('%s', timestamp) / 1200 * 1200, 'unixepoch') AS time_bin,\n    AVG(averageWeight) AS avgWeight\nFROM greenhouse_table1_weight\nWHERE timestamp >= '${isoDate}'\nGROUP BY time_bin\nORDER BY time_bin ASC\n`;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 1100,
+        "wires": [
+            [
+                "aab3e4b28bd11517"
+            ]
+        ]
+    },
+    {
+        "id": "fa4b8c9220472256",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Plot DB Data",
+        "func": "// Get data from SQL node\nlet data = msg.payload;\n\n// Check if valid array\nif (!Array.isArray(data) || data.length === 0) {\n    node.warn(\"No data or bad format\");\n    return null;\n}\n\n// Convert timestamp/averageWeight into x/y pairs\nlet chartData = data.map(row => ({\n    x: row.time_bin,\n    y: row.avgWeight\n}));\n\n// Reverse order if you want oldest → newest (charts like ascending x)\nchartData.reverse();\n\n// Send to dashboard chart\nmsg.payload = [{\n    series: [\"Average Weight\"],\n    data: [chartData],\n    labels: []\n}];\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 1080,
+        "wires": [
+            [
+                "67f70ebecf62faef"
+            ]
+        ]
+    },
+    {
+        "id": "ebd66ab51b1ca18e",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Activate threshold",
+        "func": "// --- Get threshold values ---\nlet diff = flow.get(\"diffThreshold\");\nlet activeThreshold = flow.get(\"activeThreshold\");\n\n// --- Detect deploy/restart ---\nlet hasActivated = flow.get(\"hasActivated\") || false;\n\n// If the function node just restarted, mark startup time\nif (!flow.get(\"startupChecked\")) {\n    flow.set(\"startupChecked\", true);\n    node.warn(\"⚠️ System restarted — waiting for threshold activation\");\n}\n\n// --- Handle dashboard button input ---\nif (msg.topic === \"activate\") {\n    if (diff === undefined || diff === null) {\n        msg.payload = \"⚠️ No threshold set!\";\n        msg.color = \"red\";\n        flow.set(\"hasActivated\", false);\n    } else {\n        flow.set(\"activeThreshold\", diff);\n        flow.set(\"hasActivated\", true);\n        msg.payload = `✅ Threshold activated: ${diff}`;\n        msg.color = \"green\";\n    }\n}\n// --- On regular updates (not activation) ---\nelse {\n    // If system restarted or never activated since deploy\n    if (!hasActivated) {\n        msg.payload = \"⚠️ Threshold not activated since last deploy!\";\n        msg.color = \"red\";\n    } else {\n        msg.payload = `✅ Active threshold: ${activeThreshold}`;\n        msg.color = \"green\";\n    }\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1110,
+        "y": 20,
+        "wires": [
+            [
+                "3402c3a01636acd7"
+            ]
+        ]
+    },
+    {
+        "id": "5736dbb6e1c57c61",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1920,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "976b3e2b356bba98",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 7",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2020,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "17c2ec575b118090",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 10",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1440,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "9de8116aad42a563",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 21",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "f4c2884751796c47",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "function 1",
+        "func": "flow.set(\"maxWeight\", msg.payload);\nnode.warn(`✅ maxWeight manually set to ${msg.payload}`);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1680,
+        "y": 360,
+        "wires": [
+            [
+                "586459309f67b7ba"
+            ]
+        ]
+    },
+    {
+        "id": "d993ade2dc4e309f",
+        "type": "inject",
+        "z": "407901e793da6dec",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "981.2",
+        "payloadType": "num",
+        "x": 1470,
+        "y": 360,
+        "wires": [
+            [
+                "f4c2884751796c47"
+            ]
+        ]
+    },
+    {
+        "id": "8368662176bf9c57",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 22",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1260,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "b17c3bd3c13bc834",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "fbde1689d113c1a0",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Stop",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Red",
+        "className": "",
+        "icon": "",
+        "payload": "stop",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 250,
+        "y": 380,
+        "wires": [
+            [
+                "dfd01a4de61a4022",
+                "41062adb918a6d5e"
+            ]
+        ]
+    },
+    {
+        "id": "4e28e5d17778d37a",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "fbde1689d113c1a0",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Open",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Green",
+        "className": "",
+        "icon": "",
+        "payload": "open",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 270,
+        "y": 440,
+        "wires": [
+            [
+                "dfd01a4de61a4022",
+                "41062adb918a6d5e"
+            ]
+        ]
+    },
+    {
+        "id": "33500498ccb66ee2",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "fbde1689d113c1a0",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Auto ",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Orange",
+        "className": "",
+        "icon": "",
+        "payload": "auto",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 270,
+        "y": 480,
+        "wires": [
+            [
+                "dfd01a4de61a4022",
+                "41062adb918a6d5e"
+            ]
+        ]
+    },
+    {
+        "id": "3d6270cd485fb4df",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "1f13a189f1a6f153",
+        "order": 2,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "",
+        "tooltip": "Load latest data from database",
+        "color": "Green",
+        "bgcolor": "White",
+        "className": "",
+        "icon": "fa-refresh",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 170,
+        "y": 780,
+        "wires": [
+            [
+                "f9cc7e0d00fafe0b"
+            ]
+        ]
+    },
+    {
+        "id": "e7a69836ccd5ccbb",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "1f13a189f1a6f153",
+        "order": 3,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "",
+        "tooltip": "Delete Current Chart Data",
+        "color": "Red",
+        "bgcolor": "White",
+        "className": "",
+        "icon": "fa-trash",
+        "payload": "[]",
+        "payloadType": "json",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 870,
+        "y": 800,
+        "wires": [
+            [
+                "fb1c87034dcbd31e"
+            ]
+        ]
+    },
+    {
+        "id": "f32935eb6b0e8e8d",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Auto Open",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Orange",
+        "className": "",
+        "icon": "",
+        "payload": "autoOn",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 310,
+        "y": 540,
+        "wires": [
+            [
+                "dfd01a4de61a4022"
+            ]
+        ]
+    },
+    {
+        "id": "7a5129f3bb2cf773",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Auto Close",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "Orange",
+        "className": "",
+        "icon": "",
+        "payload": "autoOff",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 310,
+        "y": 580,
+        "wires": [
+            [
+                "dfd01a4de61a4022"
+            ]
+        ]
+    },
+    {
+        "id": "3d4d7d833632af24",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "a22a2968e93f5d94",
+        "order": 2,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "",
+        "tooltip": "",
+        "color": "blue",
+        "bgcolor": "",
+        "className": "",
+        "icon": "fa-paper-plane",
+        "payload": "activate",
+        "payloadType": "str",
+        "topic": "activate",
+        "topicType": "str",
+        "x": 630,
+        "y": 60,
+        "wires": [
+            [
+                "ebd66ab51b1ca18e"
+            ]
+        ]
+    },
+    {
+        "id": "b94818213bbc111c",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "3ad6006f4390a31e",
+        "order": 2,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "",
+        "tooltip": "Load latest data from database",
+        "color": "Green",
+        "bgcolor": "White",
+        "className": "",
+        "icon": "fa-refresh",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 150,
+        "y": 1100,
+        "wires": [
+            [
+                "3a7a2df054d6e18e"
+            ]
+        ]
+    },
+    {
+        "id": "1ef6bbd1237e624c",
+        "type": "ui_button",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "3ad6006f4390a31e",
+        "order": 3,
+        "width": 1,
+        "height": 1,
+        "passthru": false,
+        "label": "",
+        "tooltip": "Delete Current Chart Data",
+        "color": "Red",
+        "bgcolor": "White",
+        "className": "",
+        "icon": "fa-trash",
+        "payload": "[]",
+        "payloadType": "json",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 850,
+        "y": 1140,
+        "wires": [
+            [
+                "67f70ebecf62faef"
+            ]
+        ]
+    },
+    {
+        "id": "5489efba8908cc6e",
+        "type": "ui_numeric",
+        "z": "407901e793da6dec",
+        "name": "Threshold Input",
+        "label": "Required Water Loss",
+        "tooltip": "",
+        "group": "a22a2968e93f5d94",
+        "order": 1,
+        "width": 5,
+        "height": 2,
+        "wrap": false,
+        "passthru": true,
+        "topic": "weightDifference",
+        "topicType": "msg",
+        "format": "{{msg.payload}}",
+        "min": 0,
+        "max": "1000",
+        "step": "50",
+        "className": "",
+        "x": 600,
+        "y": 20,
+        "wires": [
+            [
+                "6235908229deec48",
+                "9c2e13e385f93bb8"
+            ]
+        ]
+    },
+    {
+        "id": "3402c3a01636acd7",
+        "type": "ui_text",
+        "z": "407901e793da6dec",
+        "group": "a22a2968e93f5d94",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Status: ",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1300,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "df35c245d01e1f23",
+        "type": "ui_text",
+        "z": "407901e793da6dec",
+        "group": "a22a2968e93f5d94",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Stored Max Weight:",
+        "format": "{{msg.payload}}",
+        "layout": "row-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1550,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "5309d8bffc70f10f",
+        "type": "ui_gauge",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "eeeac7e82a7de1bc",
+        "order": 1,
+        "width": 8,
+        "height": 7,
+        "gtype": "gage",
+        "title": "Plant 1 Current Weight",
+        "label": "g",
+        "format": "{{value}}",
+        "min": "500",
+        "max": "1300",
+        "colors": [
+            "#b30c00",
+            "#e6e600",
+            "#2fa027"
+        ],
+        "seg1": "700",
+        "seg2": "800",
+        "diff": false,
+        "className": "",
+        "x": 1060,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "0b91cbb06c53ae3b",
+        "type": "ui_gauge",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "eeeac7e82a7de1bc",
+        "order": 2,
+        "width": 8,
+        "height": 7,
+        "gtype": "gage",
+        "title": "Plant 2 Current Weight",
+        "label": "g",
+        "format": "{{value}}",
+        "min": "500",
+        "max": "1300",
+        "colors": [
+            "#b30c00",
+            "#e6e600",
+            "#2fa027"
+        ],
+        "seg1": "700",
+        "seg2": "800",
+        "diff": false,
+        "className": "",
+        "x": 1060,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "d5cedea489fe745d",
+        "type": "ui_gauge",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "eeeac7e82a7de1bc",
+        "order": 3,
+        "width": 8,
+        "height": 7,
+        "gtype": "gage",
+        "title": "Plant 3 Current Weight",
+        "label": "g",
+        "format": "{{value}}",
+        "min": "500",
+        "max": "1300",
+        "colors": [
+            "#b30c00",
+            "#e6e600",
+            "#2fa027"
+        ],
+        "seg1": "700",
+        "seg2": "800",
+        "diff": false,
+        "className": "",
+        "x": 1060,
+        "y": 920,
+        "wires": []
+    },
+    {
+        "id": "fb1c87034dcbd31e",
+        "type": "ui_chart",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "1f13a189f1a6f153",
+        "order": 1,
+        "width": 18,
+        "height": 10,
+        "label": "Average Plant Weight",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "auto",
+        "interpolate": "linear",
+        "nodata": "Waiting for data.",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "7",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1100,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "67f70ebecf62faef",
+        "type": "ui_chart",
+        "z": "407901e793da6dec",
+        "name": "",
+        "group": "3ad6006f4390a31e",
+        "order": 1,
+        "width": 18,
+        "height": 10,
+        "label": "Plant Weight over Multiple Cycles",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "auto",
+        "interpolate": "linear",
+        "nodata": "Waiting for data.",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "60",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1120,
+        "y": 1080,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d327423373e17ffc",
+        "type": "ui_template",
+        "z": "407901e793da6dec",
+        "group": "93c26e5ec0976b2d",
+        "name": "Interface",
+        "order": 1,
+        "width": 5,
+        "height": 1,
+        "format": "<div style=\"font-size: 18px;\">\n    Mode: <span id=\"modeStatus\"></span>\n</div>\n\n<script>\n    (function(scope) {\n        scope.$watch('msg.payload', function(payload){\n            document.getElementById(\"modeStatus\").innerHTML = payload;\n        });\n    })(scope);\n    </script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 680,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bcba0eaaeb0685da",
+        "type": "ui_template",
+        "z": "407901e793da6dec",
+        "group": "93c26e5ec0976b2d",
+        "name": "interface",
+        "order": 2,
+        "width": 5,
+        "height": 1,
+        "format": "<div style=\"font-size: 18px;\">\n    Irrigation Status:\n    <span id=\"dataStatus\"></span>\n</div>\n\n<script>\n(function(scope) {\n\n    scope.$watch('msg.payload', function(payload) {\n        const el = document.getElementById(\"dataStatus\");\n        if (!el) return;\n\n        // Normalize value to 0/1\n        let val = Number(String(payload).trim());\n\n        if (val === 1) {\n            el.textContent = \" ON\";\n            el.style.color = \"green\";\n            el.style.fontWeight = \"bold\";\n        } else {\n            el.textContent = \" OFF\";\n            el.style.color = \"red\";\n            el.style.fontWeight = \"bold\";\n        }\n    });\n\n})(scope);\n</script>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1280,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a90ea28b06536e02",
+        "type": "sqlite",
+        "z": "407901e793da6dec",
+        "mydb": "1523431e01d9bcee",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Greenhouse database",
+        "x": 680,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c9dd700b119e614e",
+        "type": "sqlite",
+        "z": "407901e793da6dec",
+        "mydb": "1523431e01d9bcee",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Greenhouse database",
+        "x": 600,
+        "y": 780,
+        "wires": [
+            [
+                "dde4b0b330622a87"
+            ]
+        ]
+    },
+    {
+        "id": "2a0c512b21d1c915",
+        "type": "sqlite",
+        "z": "407901e793da6dec",
+        "mydb": "1523431e01d9bcee",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Greenhouse database",
+        "x": 620,
+        "y": 880,
+        "wires": [
+            [
+                "c96dbacb0397d069",
+                "ca2b4d9415147e72",
+                "384bcabc2791d0cd"
+            ]
+        ]
+    },
+    {
+        "id": "aab3e4b28bd11517",
+        "type": "sqlite",
+        "z": "407901e793da6dec",
+        "mydb": "1523431e01d9bcee",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Greenhouse database",
+        "x": 580,
+        "y": 1080,
+        "wires": [
+            [
+                "fa4b8c9220472256"
+            ]
+        ]
+    },
+    {
+        "id": "d0101b36691832d6",
+        "type": "debug",
+        "z": "407901e793da6dec",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "9de9740181dc4214",
+        "type": "file",
+        "z": "407901e793da6dec",
+        "name": "Wrtie Image",
+        "filename": "/home/orchid-pi/Pictures/LeParadisDesOrchidees",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 950,
+        "y": 640,
+        "wires": [
+            [
+                "d0101b36691832d6"
+            ]
+        ]
+    },
+    {
+        "id": "727cb99f7e56212a",
+        "type": "function",
+        "z": "407901e793da6dec",
+        "name": "Store Image in base64",
+        "func": "msg.payload = msg.payload.toString(\"base64\")\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 640,
+        "wires": [
+            [
+                "9de9740181dc4214"
+            ]
+        ]
+    },
+    {
+        "id": "4ca2a4912b28a123",
+        "type": "join",
+        "z": "407901e793da6dec",
+        "name": "Join Image",
+        "mode": "custom",
+        "build": "buffer",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": false,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 470,
+        "y": 640,
+        "wires": [
+            [
+                "727cb99f7e56212a"
+            ]
+        ]
+    },
+    {
+        "id": "c94afb7dbae8aaf9",
+        "type": "ui_media",
+        "z": "407901e793da6dec",
+        "group": "6949666689de5ab8",
+        "name": "",
+        "width": 8,
+        "height": 5,
+        "order": 1,
+        "category": "LOGO",
+        "file": "LOGO_LE_PARADIS_DES_ORCHIDEES.JPG",
+        "layout": "adjust",
+        "showcontrols": true,
+        "loop": true,
+        "onstart": false,
+        "scope": "local",
+        "tooltip": "",
+        "x": 150,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "14c90ab970a547d7",
+        "type": "ui_upload",
+        "z": "407901e793da6dec",
+        "group": "",
+        "title": "upload",
+        "accept": "",
+        "name": "",
+        "order": 1,
+        "width": 6,
+        "height": 4,
+        "chunk": 256,
+        "transfer": "binary",
+        "x": 310,
+        "y": 640,
+        "wires": [
+            [
+                "4ca2a4912b28a123"
+            ]
+        ]
+    },
+    {
+        "id": "44c41644dd4d2e33",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "",
+        "order": 4,
+        "width": 17,
+        "height": 1
+    },
+    {
+        "id": "acc4602cc30f447d",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "1f13a189f1a6f153",
+        "order": 4,
+        "width": 16,
+        "height": 1
+    },
+    {
+        "id": "0ee25db190a37418",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "3ad6006f4390a31e",
+        "order": 4,
+        "width": 16,
+        "height": 1
+    },
+    {
+        "id": "02312612f946f79e",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "eeeac7e82a7de1bc",
+        "order": 4,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "5fea31113204b685",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "eeeac7e82a7de1bc",
+        "order": 5,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "6ffebab4aeb650cf",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "eeeac7e82a7de1bc",
+        "order": 6,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "7a55d39380eea551",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "eeeac7e82a7de1bc",
+        "order": 7,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "33eb8625f5e7477a",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "eeeac7e82a7de1bc",
+        "order": 8,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "fd50c8728a436dc5",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "eeeac7e82a7de1bc",
+        "order": 9,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "670e34c5ea2e6b99",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "eeeac7e82a7de1bc",
+        "order": 10,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "024ec46e80b5b4c7",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "a22a2968e93f5d94",
+        "order": 3,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "6ee8f4daef160eec",
+        "type": "ui_spacer",
+        "z": "407901e793da6dec",
+        "name": "spacer",
+        "group": "a22a2968e93f5d94",
+        "order": 4,
+        "width": 2,
+        "height": 1
+    },
+    {
+        "id": "9cc7a1fdf15e6ba7",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "127.0.0.1",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "fbde1689d113c1a0",
+        "type": "ui_group",
+        "name": "Irrigation Control",
+        "tab": "6512463c9c183e8a",
+        "order": 2,
+        "disp": true,
+        "width": 7,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "1f13a189f1a6f153",
+        "type": "ui_group",
+        "name": "Current Cycle",
+        "tab": "ca624ff56aa825f2",
+        "order": 1,
+        "disp": true,
+        "width": 18,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "a22a2968e93f5d94",
+        "type": "ui_group",
+        "name": "Water Loss Threshold",
+        "tab": "6512463c9c183e8a",
+        "order": 3,
+        "disp": true,
+        "width": 7,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "3ad6006f4390a31e",
+        "type": "ui_group",
+        "name": "Multiple Cycles",
+        "tab": "ca624ff56aa825f2",
+        "order": 2,
+        "disp": true,
+        "width": 18,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "eeeac7e82a7de1bc",
+        "type": "ui_group",
+        "name": "Weight Monitoring",
+        "tab": "c8a5efbc78365c71",
+        "order": 1,
+        "disp": true,
+        "width": 25,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "93c26e5ec0976b2d",
+        "type": "ui_group",
+        "name": "Irrigation Mode",
+        "tab": "6512463c9c183e8a",
+        "order": 1,
+        "disp": true,
+        "width": 5,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "1523431e01d9bcee",
+        "type": "sqlitedb",
+        "db": "/home/orchid-pi/Documents/sqlite/Greenhouse.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "6949666689de5ab8",
+        "type": "ui_group",
+        "name": "",
+        "tab": "6512463c9c183e8a",
+        "order": 4,
+        "disp": true,
+        "width": 8,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6512463c9c183e8a",
+        "type": "ui_tab",
+        "name": "Office",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "ca624ff56aa825f2",
+        "type": "ui_tab",
+        "name": "Historic Data Trends",
+        "icon": "dashboard",
+        "order": 3,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "c8a5efbc78365c71",
+        "type": "ui_tab",
+        "name": "Data Monitoring",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "fbdd60b36d5cbc4c",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6",
+            "node-red-node-sqlite": "1.1.1",
+            "node-red-contrib-ui-media": "2.0.0",
+            "node-red-contrib-ui-upload": "0.8.1"
+        }
+    }
+]
